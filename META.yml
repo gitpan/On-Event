@@ -1,0 +1,23 @@
+---
+abstract: 'Flexible event handling over the power of AnyEvent'
+author:
+  - 'Becca <becca@referencethis.com>'
+build_requires:
+  Coro: 0
+  Coro::Timer: 0
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.30
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.200015, CPAN::Meta::Converter version 2.110440'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: On-Event
+requires:
+  Any::Moose: 0
+  AnyEvent: 0
+  Carp: 0
+  Scalar::Util: 0
+version: v0.1.0

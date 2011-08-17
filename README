@@ -1,0 +1,13 @@
+
+
+This archive contains the distribution On-Event,
+version v0.1.0:
+
+  Flexible event handling over the power of AnyEvent
+
+This software is copyright (c) 2011 by Rebecca Turner.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+
