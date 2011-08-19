@@ -1,9 +1,9 @@
 
 
 This archive contains the distribution On-Event,
-version v0.1.0:
+version v0.1.1:
 
-  Flexible event handling over the power of AnyEvent
+  Flexible event handling built on the power of AnyEvent
 
 This software is copyright (c) 2011 by Rebecca Turner.
 

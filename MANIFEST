@@ -6,6 +6,7 @@ META.yml
 Makefile.PL
 README
 SIGNATURE
+TODO
 dist.ini
 lib/On/Event.pm
 lib/On/Event/Timer.pm

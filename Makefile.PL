@@ -9,11 +9,9 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  'ABSTRACT' => 'Flexible event handling over the power of AnyEvent',
+  'ABSTRACT' => 'Flexible event handling built on the power of AnyEvent',
   'AUTHOR' => 'Becca <becca@referencethis.com>',
   'BUILD_REQUIRES' => {
-    'Coro' => '0',
-    'Coro::Timer' => '0',
     'Test::More' => '0'
   },
   'CONFIGURE_REQUIRES' => {
@@ -29,7 +27,7 @@ my %WriteMakefileArgs = (
     'Carp' => '0',
     'Scalar::Util' => '0'
   },
-  'VERSION' => 'v0.1.0',
+  'VERSION' => 'v0.1.1',
   'test' => {
     'TESTS' => 't/*.t'
   }

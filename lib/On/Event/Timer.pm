@@ -1,6 +1,6 @@
 package On::Event::Timer;
 {
-  $On::Event::Timer::VERSION = 'v0.1.0';
+  $On::Event::Timer::VERSION = 'v0.1.1';
 }
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ use Scalar::Util;
 
 with 'On::Event';
 
-has 'in'    => (isa=>'Num|CodeRef', is=>'ro', default=>0);
+has 'delay'    => (isa=>'Num|CodeRef', is=>'ro', default=>0);
 has 'interval' => (isa=>'Num', is=>'ro', default=>0);
 has '_guard'   => (is=>'rw');
 has_event 'timeout';
@@ -55,7 +55,7 @@ sub sleep_until {
 sub after {
     my $class = shift;
     my( $after, $on_timeout ) = @_;
-    my $self = $class->new( in=> $after );
+    my $self = $class->new( delay=> $after );
     $self->on( timeout => $on_timeout );
     $self->start( defined(wantarray) );
     return $self;
@@ -65,7 +65,7 @@ sub after {
 sub at {
     my $class = shift;
     my( $at, $on_timeout ) = @_;
-    my $self = $class->new( in=> sub {$at - AE::time}  );
+    my $self = $class->new( delay=> sub {$at - AE::time}  );
     $self->on( timeout => $on_timeout );
     $self->start( defined(wantarray) );
     return $self;
@@ -75,7 +75,7 @@ sub at {
 sub every {
     my $class = shift;
     my( $every, $on_timeout ) = @_;
-    my $self = $class->new( in => $every, interval => $every );
+    my $self = $class->new( delay => $every, interval => $every );
     $self->on( timeout => $on_timeout );
     $self->start( defined(wantarray) );
     return $self;
@@ -94,20 +94,20 @@ sub start {
     my $cb;
     Scalar::Util::weaken($self) if $is_weak;
     if ( $self->interval ) {
-        $cb = sub { $self->trigger('timeout') };
+        $cb = sub { $self->emit('timeout') };
     }
     else {
-        $cb = sub { $self->cancel; $self->trigger('timeout'); }
+        $cb = sub { $self->cancel; $self->emit('timeout'); }
     }
-    my $in;
-    if ( ref $self->in ) {
-        $in = $self->in->();
-        $in = 0 if $in < 0;
+    my $delay;
+    if ( ref $self->delay ) {
+        $delay = $self->delay->();
+        $delay = 0 if $delay < 0;
     }
     else {
-        $in = $self->in;
+        $delay = $self->delay;
     }
-    my $w = AE::timer $in, $self->interval, sub { $self->trigger('timeout') };
+    my $w = AE::timer $delay, $self->interval, sub { $self->emit('timeout') };
     $self->_guard( $w );
 }
 
@@ -133,11 +133,11 @@ On::Event::Timer - Timer/timeout events for On::Event
 
 =head1 VERSION
 
-version v0.1.0
+version v0.1.1
 
 =head1 SYNOPSIS
 
-    use On::Event Timer => qw( sleep sleep_until );
+    use On::Event::Timer qw( sleep sleep_until );
     
     # After five seconds, say Hi
     On::Event::Timer->after( 5, sub { say "Hi!" } );
@@ -164,7 +164,7 @@ Trigger events at a specific time or after a specific delay.
 
 =item our sub sleep( Rat $secs ) is export
 
-Sleep for $secs while allowing events to trigger (and Coroutine threads to run)
+Sleep for $secs while allowing events to emit (and Coroutine threads to run)
 
 =back
 
@@ -172,7 +172,7 @@ Sleep for $secs while allowing events to trigger (and Coroutine threads to run)
 
 =item our sub sleep_until( Rat $epochtime ) is export
 
-Sleep until $upochtime while allowing events to trigger (and Coroutine threads to run)
+Sleep until $epochtime while allowing events to emit (and Coroutine threads to run)
 
 =back
 
@@ -195,10 +195,11 @@ return value, it acts as a guard-- if it's destoryed then the timer is canceled.
 Asychronously, after $seconds and every $seconds there after, calls $on-Timeout.  If you
 store the return value it acts as a guard-- if it's destroyed then the timer is canceled.
 
-=item our method new( :$in, :$interval? ) returns On::Event::Timer
+=item our method new( :$delay, :$interval? ) returns On::Event::Timer
 
-Creates a new timer object that will trigger it's "timeout" event after $in
-seconds and every $interval seconds there after.
+Creates a new timer object that will emit it's "timeout" event after $delay
+seconds and every $interval seconds there after.  Delay can be a code ref,
+in which case it's return value is the number of seconds to delay.
 
 =back
 
@@ -208,18 +209,18 @@ seconds and every $interval seconds there after.
 
 =item our method on( Str $event, CodeRef $listener ) returns CodeRef
 
-Registers $listener as a listener on $event.  When $event is triggered ALL
+Registers $listener as a listener on $event.  When $event is emitted ALL
 registered listeners are executed.
 
 Returns the listener coderef.
 
-=item our method trigger( Str $event, Array[Any] *@args )
+=item our method emit( Str $event, Array[Any] *@args )
 
 Normally called within the class using the On::Event role.  This calls all
 of the registered listeners on $event with @args.
 
 If you're using coroutines then each listener will get its own thread and
-trigger will cede before returning.
+emit will cede before returning.
 
 =item our method remove_all_listeners( Str $event )
 
@@ -234,7 +235,7 @@ the object will cancel the timer.
 
 Cancels a running timer. You can start the timer again by calling the start
 method.  For after and every timers, it begins waiting all over again. At timers will
-still trigger at the time you specified (or immediately if that time has passed).
+still emit at the time you specified (or immediately if that time has passed).
 
 =back
 
@@ -244,7 +245,17 @@ still trigger at the time you specified (or immediately if that time has passed)
 
 =item timeout
 
-This event takes no arguments.  It's triggered when the event time completes.
+This event takes no arguments.  It's emitted when the event time completes.
+
+=back
+
+=head1 SEE ALSO
+
+=over
+
+=item * L<AnyEvent>
+
+=item * L<http://nodejs.org/docs/v0.5.4/api/timers.html>
 
 =back
 
